@@ -1,27 +1,15 @@
 <template>
   <div id="app">
     <section id="signInAndSignUp" v-if="!currentUser">
-      <div>
+      <div class="user-action">
         <label><input type="radio" name="type" v-model="actionType"  value="signUp"> 注册</label>
         <label><input type="radio" name="type" v-model="actionType"  value="login"> 登录</label>
       </div>
       <div class="signUp" v-if="actionType=='signUp'">
         <form @submit.prevent="signUp">
           <div class="formRow">
-            <span class="label">username :</span>
-            <span class="input input--hoshi">
-                <input class="input__field input__field--hoshi" type="text" id="input-1" v-model="formData.username">
-                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-1">
-              </label>
-              </span>
-          </div>
-          <div class="formRow">
-            <span class="label">password :</span>
-            <span class="input input--hoshi">
-                <input class="input__field input__field--hoshi" type="password" id="input-2" v-model="formData.password">
-                <label class="input__label input__label--hoshi input__label--hoshi-color-2" for="input-2">
-                </label>
-              </span>
+            <input type="text" placeholder="用户名" v-model="formData.username">
+            <input type="password" placeholder="密码" v-model="formData.password">
           </div>
           <div class="formActions">
             <input type="submit" value="注册">
@@ -31,20 +19,8 @@
       <div class="login" v-if="actionType=='login'">
         <form @submit.prevent="login">
           <div class="formRow">
-            <span class="label">username :</span>
-            <span class="input input--hoshi">
-                <input class="input__field input__field--hoshi" type="text" id="input-1" v-model="formData.username">
-                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-1">
-              </label>
-              </span>
-          </div>
-          <div class="formRow">
-            <span class="label">password :</span>
-            <span class="input input--hoshi">
-                <input class="input__field input__field--hoshi" type="password" id="input-2" v-model="formData.password">
-                <label class="input__label input__label--hoshi input__label--hoshi-color-2" for="input-2">
-                </label>
-              </span>
+            <input type="text" placeholder="用户名" v-model="formData.username">
+            <input type="password" placeholder="密码" v-model="formData.password">
           </div>
           <div class="formActions">
             <input type="submit" value="登录">
@@ -53,23 +29,25 @@
       </div>
     </section>
     <section id="todo" v-if="currentUser">
-      <div>
+      <div class="user-action">
         <span class="msg">你好，{{currentUser.username}}</span>
         <button @click="logout">退出</button>
       </div>
       <div class="newTask">
-        <input type="text" v-model="newTodo" @keypress.enter="addTodo" class="new-todo">
+        <input type="text" placeholder="新项目..." v-model="newTodo" @keypress.enter="addTodo" class="new-todo">
       </div>
-      <ol class="todos" v-if="todoList.length">
-        <li v-for="todo in todoList">
-          <input type="checkbox" v-model="todo.done">
-          <span>{{ todo.title }}</span>
-          <span class="createTime">{{todo.createdAt | normalTime}}</span>
-          <span v-if="todo.done" class="tag success">已完成</span>
-          <span v-else class="tag warning">未完成</span>
-          <button class="close" @click="removeTodo(todo)">X</button>
-        </li>
-      </ol>
+      <div class="todo-list">
+        <ol class="todos" v-if="todoList.length">
+          <li v-for="(todo, i) in todoList">
+            <button class="close" @click="removeTodo(todo)">X</button>
+            <input type="checkbox" v-model="todo.done" :id="'check-'+i" @change="saveOrUpdateTodos()">
+            <label :for="'check-'+i"><span>{{ todo.title }}</span></label>
+            <span class="createTime">{{todo.createdAt | normalTime}}</span>
+            <span v-if="todo.done" class="tag success">已完成</span>
+            <span v-else class="tag warning">未完成</span>
+          </li>
+        </ol>
+      </div>
     </section>
   </div>
 </template>
@@ -162,7 +140,7 @@
         AV.User.logIn(this.formData.username, this.formData.password).then((loginedUser) => {
           this.currentUser = this.getCurrentUser();
           this.fetchTodos();
-        }, (error) => {
+        }, function (error) {
           console.log('登录失败');
         });
       },
@@ -193,253 +171,209 @@
     },
     created() {
       // beforeunload 事件里面的所有请求都发不出去，会被取消
-
       this.currentUser = this.getCurrentUser();
       this.fetchTodos();
     }
   }
 </script>
 <style>
-  * {
+  body,
+  button,
+  form,
+  hr,
+  input,
+  li,
+  ol,
+  p,
+  ul {
     margin: 0;
     padding: 0;
-    outline: none;
-    font-family: 'Microsoft Yahei', Arial, sans-serif;
   }
   
   body {
-    background-color: rgb(199, 237, 233);
-    background-image: linear-gradient(#fff 1px, transparent 0), linear-gradient(90deg, #fff 1px, transparent 0);
-    background-size: 30px 30px;
+    font-family: 'Microsoft YaHei', sans-serif;
+    background: #BBDEFA;
   }
   
-  input[type="checkbox"] {
-    height: 20px;
-    width: 20px;
-    vertical-align: middle;
-  }
-  
-  input[type="submit"] {
-    padding: 6px 15px;
-    color: #4ea8f5;
-    background: transparent;
-    display: inline-block;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid #4ea8f5;
-    border-radius: 3px;
-  }
-  
-  input[type="submit"]:hover {
-    background-color: #4ea8f5;
-    color: #fff;
-    transition: all 0.5s ease 0s;
-  }
-  
-  button {
-    padding: 4px 15px;
-    color: palevioletred;
-    background: transparent;
-    display: inline-block;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid palevioletred;
-    border-radius: 3px;
-  }
-  
-  button:hover {
-    background-color: palevioletred;
-    color: #fff;
-    transition: all 0.5s ease 0s;
-  }
-  
-  .createTime {
+  #signInAndSignUp,
+  #todo {
     position: absolute;
-    right: 95px;
-    color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .close {
-    padding: 4px 15px;
-    position: absolute;
-    right: 0;
-    border: none;
-    color: darkorange;
-  }
-  
-  .success {
-    color: mediumspringgreen;
-  }
-  
-  .warning {
-    color: rgb(255, 66, 93);
-  }
-  
-  .tag {
-    position: absolute;
-    right: 35px;
-  }
-  
-  .msg {
-    margin-right: 15px;
-  }
-  
-  .label {
-    display: inline-block;
-    padding-top: 15px;
-  }
-  
-  .new-todo {
-    padding: 16px;
-    width: 585px;
-    font-size: 110%;
-    border: 1px solid transparent;
+    top: 50%;
+    left: 50%;
+    margin: 0 auto;
+    margin-left: -150px;
+    margin-top: -165px;
+    width: 300px;
     border-radius: 5px;
-    box-shadow: 5px 5px 5px #888;
-    margin: 10px;
+    color: #666;
+  }
+  
+  #todo {
+    width: 750px;
+    margin-left: -375px;
+  }
+  
+  .user-action {
+    padding: 10px;
+    height: 30px;
+    color: rgba(255, 255, 255, .85);
+    background: #64B5F6;
+    border-radius: 5px 5px 0 0;
+  }
+  
+  .user-action .msg {
+    line-height: 2;
+  }
+  
+  .user-action button {
+    display: inline-block;
+    font: 100%/1.2 sans-serif;
+    width: 5em;
+    height: 2em;
+    float: right;
+    cursor: pointer;
+    background: #1C88E4;
+    border: none;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, .85);
+    transition: all .3s;
+  }
+  
+  .user-action button:hover {
+    transform: scale(1.1, 1.1);
+    opacity: .8;
+  }
+  
+  .signUp,
+  .login {
+    background: #fff;
+    border-radius: 0 0 5px 5px;
+    color: #AAA9A9;
+  }
+  
+  form {
+    padding: 30px;
+  }
+  
+  .formRow {
+    border: 8px solid #EEEEEF;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  .formRow input,
+  .new-todo {
+    line-height: 1.2;
+    border: none;
+    outline: none;
+    padding: 10px;
+    width: 91%;
+    font: 100% 'Microsoft YaHei', sans-serif;
+  }
+  
+  .formRow input:first-of-type {
+    border-bottom: 2px solid #AAA9A9;
+  }
+  
+  .formActions {
+    margin: 30px 0;
+  }
+  
+  .formActions input {
+    display: block;
+    border: none;
+    border-radius: 3px;
+    background: #7984DD;
+    color: #fff;
+    width: 100%;
+    height: 40px;
+    font: 100%/1 'Microsoft YaHei', sans-serif;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  
+  .newTask {
+    padding: 10px;
     background: #fff;
   }
   
+  .new-todo {
+    color: #666;
+  }
+  
+  .todo-list {
+    padding: 28px 28px 27px 0;
+    background-color: #fff;
+    background-image: linear-gradient(90deg, transparent 29px, #F9C6D7 29px, #F9C6D7 32px, transparent 32px), linear-gradient(#BCDFFA .1em, transparent .1em);
+    background-size: 100% 1.7em;
+    border-radius: 0 0 5px 5px;
+  }
+  
   .todos {
-    position: relative;
-    width: 35em;
-    margin: .5em;
-    background: rgb(92, 167, 186);
-    background: linear-gradient(-150deg, transparent 1.5em, rgb(92, 167, 186) 0);
-    padding: 2em;
-    font: 100%/1.6 Baskerville, Palatino, serif;
-    border-radius: .5em;
+    list-style: none;
   }
   
-  .todos::before {
-    content: '';
+  .todos li {
+    height: 27px;
+    line-height: 27px;
+  }
+  
+  input[type="checkbox"] {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 1.73em;
-    height: 3em;
-    background: linear-gradient(to left bottom, transparent 50%, rgba(0, 0, 0, .2) 0, rgba(0, 0, 0, .4)) 100% 0 no-repeat;
-    transform: translateY(-1.3em) rotate(-30deg);
-    transform-origin: bottom right;
-    border-bottom-left-radius: .5em;
-    box-shadow: -.2em .2em .3em -.1em rgba(0, 0, 0, .15)
+    clip: rect(0, 0, 0, 0);
   }
   
-  .input {
-    position: relative;
-    z-index: 1;
+  input[type="checkbox"]+label::before {
+    content: '\A0';
     display: inline-block;
-    max-width: 400px;
-    margin: .2em;
-    width: calc(100% - 2em);
-    vertical-align: top;
-    font-size: 150%;
+    vertical-align: .2em;
+    width: 1.2em;
+    height: 1.2em;
+    margin-right: .2em;
+    border-radius: 1em;
+    background: #DCEDFD;
+    text-indent: .15em;
+    line-height: .65;
   }
   
-  .input__field {
-    border: none;
+  input[type="checkbox"]:checked+label::before {
+    content: '\2713';
     font-weight: bold;
-    background-color: transparent;
+    color: #46A5F5;
   }
   
-  .input__field:focus {
-    outline: none;
+  .close {
+    display: inline-block;
+    border-radius: 50%;
+    width: 18.4px;
+    height: 18.4px;
+    margin: 0 8px 0px 4px;
+    border: none;
+    line-height: 1;
+    background: #FF8F00;
+    font-weight: bold;
+    cursor: pointer;
   }
   
-  .input--hoshi {
-    overflow: hidden;
+  .tag {
+    float: right;
+    border-radius: 4px;
+    padding: 0 3px;
+    margin-right: 10px;
+    height: 26px;
+    line-height: 26px;
+    transition: all .3s;
   }
   
-  .input__field--hoshi {
-    padding: 0.55em 0.15em;
-    color: #595F6E;
-    font-size: 70%;
+  .createTime {
+    float: right;
   }
   
-  .input__label--hoshi {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    padding: 0 0.25em;
-    width: 100%;
-    height: calc(100% - 1em);
-    text-align: left;
-    pointer-events: none;
+  .warning {
+    background: #f79ea8;
   }
   
-  .input__label--hoshi::before,
-  .input__label--hoshi::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 10px);
-    border-bottom: 1px solid #B9C1CA;
-  }
-  
-  .input__label--hoshi::after {
-    margin-top: 2px;
-    border-bottom: 4px solid red;
-    -webkit-transform: translate3d(-100%, 0, 0);
-    transform: translate3d(-100%, 0, 0);
-    -webkit-transition: -webkit-transform 0.3s;
-    transition: transform 0.3s;
-  }
-  
-  .input__label--hoshi-color-1::after {
-    border-color: hsl(200, 100%, 50%);
-  }
-  
-  .input__label--hoshi-color-2::after {
-    border-color: hsl(160, 100%, 50%);
-  }
-  
-  .input__field--hoshi:focus+.input__label--hoshi::after,
-  .input--filled .input__label--hoshi::after {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-  }
-  
-  .input__field--hoshi:focus+.input__label--hoshi .input__label-content--hoshi,
-  .input--filled .input__label-content--hoshi {
-    -webkit-animation: anim-1 0.3s forwards;
-    animation: anim-1 0.3s forwards;
-  }
-  
-  @-webkit-keyframes anim-1 {
-    50% {
-      opacity: 0;
-      -webkit-transform: translate3d(1em, 0, 0);
-      transform: translate3d(1em, 0, 0);
-    }
-    51% {
-      opacity: 0;
-      -webkit-transform: translate3d(-1em, -40%, 0);
-      transform: translate3d(-1em, -40%, 0);
-    }
-    100% {
-      opacity: 1;
-      -webkit-transform: translate3d(0, -40%, 0);
-      transform: translate3d(0, -40%, 0);
-    }
-  }
-  
-  @keyframes anim-1 {
-    50% {
-      opacity: 0;
-      -webkit-transform: translate3d(1em, 0, 0);
-      transform: translate3d(1em, 0, 0);
-    }
-    51% {
-      opacity: 0;
-      -webkit-transform: translate3d(-1em, -40%, 0);
-      transform: translate3d(-1em, -40%, 0);
-    }
-    100% {
-      opacity: 1;
-      -webkit-transform: translate3d(0, -40%, 0);
-      transform: translate3d(0, -40%, 0);
-    }
+  .success {
+    background: #82eac5;
   }
 </style>

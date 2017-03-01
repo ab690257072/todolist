@@ -25,7 +25,7 @@ Vue.filter('normalTime', function (t) {
       dt[i] = '0' + dt[i]
     }
   }
-  let tpl = dt[0] + '年' + dt[1] + '月' + dt[2] + '日 ' + dt[3] + ':' + dt[4] + ':' + dt[5];
+  let tpl = dt[0] + '.' + dt[1] + '.' + dt[2] + '. ' + dt[3] + ':' + dt[4] + ':' + dt[5];
   return tpl;
 });
 
